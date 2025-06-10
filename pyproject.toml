@@ -1,0 +1,24 @@
+[project]
+name = "miv-criticality-dashboard"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "miv-os>=0.3.2.post5",
+    "click>=8.2.1",
+    "dash>=3.0.4",
+    "dash-bootstrap-components>=2.0.3",
+    "pre-commit>=4.2.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+select = ["E", "F", "I", "N", "W", "B", "UP", "PL", "RUF"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
