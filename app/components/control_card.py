@@ -82,7 +82,7 @@ def generate_control_card():
                 0.01,
                 value=0.1,
                 id="min-interburst-interval-bound-slider",
-                marks={i: f"{int(i * 1000)}ms" for i in np.linspace(0.0, 0.5, 10 + 1)},
+                marks={i: f"{int(i * 1000)}ms" for i in np.linspace(0.0, 0.5, 5 + 1)},
             ),
             html.Br(),
             html.Br(),

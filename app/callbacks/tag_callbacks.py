@@ -7,11 +7,19 @@ from app.utils.data_utils import get_experiment_index, get_subdirectories
 
 def register_tag_callbacks(app):
     @app.callback(
-        Output("path-dropdown", "options"),
-        Input("workdir-dropdown", "value"),
+        output=[
+            Output("path-dropdown", "options"),
+            Output("experiment-index-dropdown", "options"),
+        ],
+        inputs=[Input("workdir-dropdown", "value")],
+        prevent_initial_call="initial_duplicate",
     )
-    def update_path_dropdown(workdir):
-        """Update path dropdown options based on selected workdir."""
+    def update_tag_dropdowns(workdir):
+        """Update path and experiment index dropdown options based on selected workdir."""
+        if not workdir:
+            return [], []
+
+        # Update path dropdown
         paths, full_paths = get_subdirectories(workdir, tag="spike_detection_00")
         optinal_tag = get_subdirectories(workdir, tag="spike_detection_00_0-127")
         paths += optinal_tag[0]
@@ -21,12 +29,13 @@ def register_tag_callbacks(app):
             {"label": os.path.basename(path), "value": full_path}
             for path, full_path in zip(paths, full_paths, strict=False)
         ]
-        return paths_options
+        return [paths_options, []]
 
     @app.callback(
-        Output("experiment-index-dropdown", "options"),
+        Output("experiment-index-dropdown", "options", allow_duplicate=True),
         Input("path-dropdown", "value"),
         State("workdir-dropdown", "value"),
+        prevent_initial_call="initial_duplicate",
     )
     def update_experiment_index_dropdown(path, workdir):
         if not path:
