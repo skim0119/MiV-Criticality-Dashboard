@@ -48,16 +48,12 @@ class RunCriticalityAnalysis:
             post_burst_extension=config.post_burst_extension,
             tag=f"avalanche_detection_{config.data_tag}",
         )
-        avalanche_analysis = AvalancheAnalysis(
-            tag=f"avalanche_analysis_{config.data_tag}"
-        )
+        avalanche_analysis = AvalancheAnalysis(tag=f"avalanche_analysis_{config.data_tag}")
         spikestamps >> avalanche_detection >> avalanche_analysis
         # avalanche_detection.cacher.policy = "OFF"
-        # avalanche_analysis.cacher.policy = "OFF"
+        avalanche_analysis.cacher.policy = "OFF"  # This needs to be off
 
-        result_path = os.path.join(
-            config.pipeline_run_path, "criticality", config.class_id
-        )
+        result_path = os.path.join(config.pipeline_run_path, "dash_criticality", config.class_id)
         Pipeline(avalanche_analysis).run(result_path, skip_plot=True, verbose=True)
 
         self.output = {
@@ -113,6 +109,7 @@ class RunCriticalityAnalysis:
         # axes[1].set_ylabel("Event Frequency")
         hist, bins = np.histogram(durations, bins=logbins)
         alpha = 0
+        duration_fit = np.ones_like(logbins)
         try:
             if (hist > 1).sum() > 0:
                 popt, pcov = curve_fit(neg_power, bins[:-1][hist > 1], hist[hist > 1])
@@ -122,7 +119,6 @@ class RunCriticalityAnalysis:
                 # )
                 duration_fit = neg_power(logbins, *popt)
         except (RuntimeError, TypeError) as e:
-            duration_fit = np.ones_like(logbins)
             logging.warning(f"Power-fit failed: {e!s}. No fitted line will be plotted.")
         col.append([bins[:-1][hist > 1], hist[hist > 1], logbins, duration_fit, alpha])
 

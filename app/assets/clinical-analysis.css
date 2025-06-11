@@ -124,17 +124,25 @@ H5, H3 {
 
 #run-button-container {
     margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #run-btn {
-    width: 100%;
-    background-color: #33C3F0;
+    width: 80%;
+    background-color: #1364f0;
     color: white;
     border: none;
     padding: 10px;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    font-size: 16px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #run-btn:hover {

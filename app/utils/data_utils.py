@@ -32,35 +32,10 @@ def get_subdirectories(workdir: str, tag: str):
 def get_experiment_index(workdir: str, tag: str):
     matches = []
     # Extract the pattern from tag, assuming there is only one *
-    re_pattern = tag.replace("*", r"(\d+)")
+    re_pattern = tag.replace("*", r"(.*)")
     # Find all matches in the directory
     for item in os.listdir(workdir):
         match = re.match(re_pattern, item)
         if match:
             matches.append(match.group(1))
     return sorted(matches)
-
-    # Get relative paths to parent directories and extract identifiers
-    relative_paths = []
-    identifiers = []
-    pattern = re.compile(f"{tag}(.*)")
-
-    # Get the full paths first
-    _, full_paths = get_subdirectories(workdir, tag)
-    if not full_paths:
-        return [], [], []
-
-    for full_path in full_paths:
-        parent_dir = os.path.dirname(full_path)
-        rel_path = os.path.relpath(parent_dir, workdir)
-        relative_paths.append(rel_path)
-
-        # Extract the identifier after spike_detection_
-        dir_name = os.path.basename(full_path)
-        match = pattern.match(dir_name)
-        if match:
-            identifiers.append(match.group(1))
-        else:
-            identifiers.append(None)
-
-    return full_paths, relative_paths, identifiers

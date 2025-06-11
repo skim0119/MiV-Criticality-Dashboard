@@ -21,15 +21,11 @@ def get_raster(fig, data_path, experiment, bin_size):
     )
     x, y = spikestamps.flatten()
 
-    trace = go.Scatter(
-        x=x, y=y, mode="markers", opacity=0.8, marker=dict(size=2, symbol="circle")
-    )
+    trace = go.Scatter(x=x, y=y, mode="markers", opacity=0.8, marker=dict(size=2, symbol="circle"))
     fig.add_trace(trace)
 
     for start, end in zip(starts_time, ends_time, strict=False):
-        fig.add_vrect(
-            x0=start, x1=end, fillcolor="red", opacity=0.2, line_width=0, layer="below"
-        )
+        fig.add_vrect(x0=start, x1=end, fillcolor="red", opacity=0.2, line_width=0, layer="below")
         if start > spikestamps.get_first_spikestamp() + interval:
             break
     fig.update_xaxes(
