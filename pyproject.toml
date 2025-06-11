@@ -13,10 +13,10 @@ dependencies = [
 ]
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 target-version = "py310"
-lint.select = ["E", "F", "I", "N", "W", "B", "UP", "PL", "RUF"]
-lint.ignore = ["PLR0915"]
+lint.select = ["E", "F", "I", "N", "W", "B", "UP", "RUF"]
+lint.ignore = []
 
 [tool.ruff.format]
 quote-style = "double"
