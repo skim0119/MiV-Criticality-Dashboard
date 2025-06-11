@@ -24,6 +24,49 @@ def generate_criticality_plot_placeholder():
                     dcc.Graph(id="raster-plot", className="nine columns"),
                 ],
             ),
+            html.Div(
+                id="raster-controls",
+                className="row",
+                children=[
+                    html.Div(
+                        className="nine columns",
+                        children=[
+                            dcc.RangeSlider(
+                                id="raster-interval-slider",
+                                min=1,
+                                max=300,
+                                step=1,
+                                value=[0, 60],
+                                marks={i: f"{i}s" for i in range(0, 301, 60)},
+                            ),
+                        ],
+                    ),
+                    html.Div(
+                        className="three columns",
+                        children=[
+                            html.Button(
+                                "Update Raster",
+                                id="update-raster-btn",
+                                className="button-primary",
+                            ),
+                            html.Div(
+                                id="update-raster-loading",
+                                style={"display": "none"},
+                                children=[
+                                    html.Div(
+                                        className="loading",
+                                        children=[
+                                            html.Div(
+                                                className="loading-spinner",
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
             html.Br(),
             dcc.Textarea(
                 id="analysis-textarea",

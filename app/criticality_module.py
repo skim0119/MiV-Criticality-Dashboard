@@ -33,6 +33,7 @@ class Config:
 
 class RunCriticalityAnalysis:
     def __call__(self, config: Config):
+        self.config = config  # Cache last-run
         with open(config.spike_data_path, "rb") as f:
             spikestamps = pkl.load(f)
 
@@ -50,7 +51,7 @@ class RunCriticalityAnalysis:
         )
         avalanche_analysis = AvalancheAnalysis(tag=f"avalanche_analysis_{config.data_tag}")
         spikestamps >> avalanche_detection >> avalanche_analysis
-        # avalanche_detection.cacher.policy = "OFF"
+        avalanche_detection.cacher.policy = "OFF"  # This is for memory sake
         avalanche_analysis.cacher.policy = "OFF"  # This needs to be off
 
         result_path = os.path.join(config.pipeline_run_path, "dash_criticality", config.class_id)

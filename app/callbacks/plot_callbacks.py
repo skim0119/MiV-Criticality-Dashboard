@@ -1,12 +1,17 @@
 import os
+import pickle as pkl
 
+import numpy as np
 import plotly.express as px
 import plotly.graph_objs as go
 from dash import Input, Output, State
+from dash.exceptions import PreventUpdate
 from plotly.subplots import make_subplots
 
 from app.criticality_module import Config, RunCriticalityAnalysis
 from app.utils.plot_utils import get_raster
+
+EXPERIMENT_CACHE = None
 
 
 def func(config):
@@ -64,6 +69,7 @@ def register_plot_callbacks(app):
             return [go.Figure() for _ in range(5)] + [""] + [False, {"display": "none"}]
 
         try:
+            global EXPERIMENT_CACHE
             path = data_path
             index = data_path.split("spike_detection_")[1]
             pipeline_run_path = os.path.dirname(path)
@@ -84,6 +90,7 @@ def register_plot_callbacks(app):
                 "post_burst_extension": post_burst_extension,
             }
             experiment = func(config)
+            EXPERIMENT_CACHE = experiment
 
             pl_fit = experiment.power_law_fitting()
 
@@ -196,3 +203,63 @@ def register_plot_callbacks(app):
         except Exception as e:
             # If there's an error, re-enable the button and hide loading
             return [go.Figure() for _ in range(5)] + [str(e)] + [False, {"display": "none"}]
+
+    @app.callback(
+        Output("raster-plot", "figure", allow_duplicate=True),
+        Output("update-raster-btn", "disabled"),
+        Output("update-raster-loading", "style"),
+        Input("update-raster-btn", "n_clicks"),
+        State("raster-interval-slider", "value"),
+        State("experiment-index-dropdown", "value"),
+        State("bin-size-slider", "value"),
+        prevent_initial_call=True,
+    )
+    def update_raster_plot(n_clicks, interval_range, data_path, bin_size):
+        if not data_path or not interval_range:
+            return go.Figure(), False, {"display": "none"}
+
+        try:
+            global EXPERIMENT_CACHE
+            if EXPERIMENT_CACHE is None:
+                raise PreventUpdate
+            experiment = EXPERIMENT_CACHE
+            spike_cache_path = experiment.config.spike_data_path
+
+            fig = make_subplots(rows=1, cols=1)
+            get_raster(fig, spike_cache_path, experiment, bin_size, interval_range)
+            fig.update_layout(
+                title="Raster",
+                xaxis_title="Time (s)",
+                yaxis_title="Channel",
+            )
+            return fig, False, {"display": "none"}
+        except Exception:
+            return go.Figure(), False, {"display": "none"}
+
+    @app.callback(
+        Output("raster-interval-slider", "min"),
+        Output("raster-interval-slider", "max"),
+        Output("raster-interval-slider", "marks"),
+        Output("raster-interval-slider", "value"),
+        Input("run-btn", "n_clicks"),
+        State("experiment-index-dropdown", "value"),
+        prevent_initial_call=True,
+    )
+    def update_slider_range(n_clicks, data_path):
+        if not data_path:
+            return 1, 300, {i: f"{i}s" for i in range(0, 301, 60)}, [0, 60]
+
+        try:
+            path = data_path
+            spike_cache_path = os.path.join(path, ".cache", "cache_data_rank000_0000.pkl")
+            with open(spike_cache_path, "rb") as f:
+                spikestamps = pkl.load(f)
+            stime = spikestamps.get_first_spikestamp()
+            etime = spikestamps.get_last_spikestamp()
+
+            marks = {i: f"{i:.2f}s" for i in np.linspace(stime, etime, 20)}
+            initial_value = [stime, min(stime + 60, etime)]
+
+            return stime, etime, marks, initial_value
+        except Exception as e:
+            raise PreventUpdate from e
