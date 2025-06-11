@@ -11,7 +11,7 @@ def modify(spikestamps, pre_burst_extension, post_burst_extension):
 
 def get_subdirectories(workdir: str, tag: str):
     if not workdir or not os.path.exists(workdir):
-        return []
+        return [], []
 
     glob_pattern = os.path.join(workdir, "**", tag)
     paths = []
@@ -24,6 +24,8 @@ def get_subdirectories(workdir: str, tag: str):
 
     path_pairs = list(zip(paths, full_paths, strict=False))
     path_pairs.sort(key=lambda x: x[0])
+    if len(path_pairs) == 0:
+        return [], []
     sorted_paths, sorted_full_paths = zip(*path_pairs, strict=False)
 
     return list(sorted_paths), list(sorted_full_paths)
