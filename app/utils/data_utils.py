@@ -19,7 +19,11 @@ def get_subdirectories(workdir: str, tag: str):
     for dir_path in glob.glob(glob_pattern, recursive=True):
         if os.path.isdir(dir_path):
             parent_dir = os.path.dirname(dir_path)
-            paths.append(parent_dir.split(workdir)[1])
+            if parent_dir == workdir:
+                path = "."
+            else:
+                path = parent_dir.split(workdir)[1]
+            paths.append(path)
             full_paths.append(parent_dir)
 
     path_pairs = list(zip(paths, full_paths, strict=False))
@@ -33,11 +37,17 @@ def get_subdirectories(workdir: str, tag: str):
 
 def get_experiment_index(workdir: str, tag: str):
     matches = []
-    # Extract the pattern from tag, assuming there is only one *
-    re_pattern = tag.replace("*", r"(.*)")
-    # Find all matches in the directory
-    for item in os.listdir(workdir):
-        match = re.match(re_pattern, item)
-        if match:
-            matches.append(match.group(1))
-    return sorted(matches)
+    if "*" in tag:
+        # Extract the pattern from tag, assuming there is only one *
+        re_pattern = tag.replace("*", r"(.*)")
+        # Find all matches in the directory
+        for item in os.listdir(workdir):
+            match = re.match(re_pattern, item)
+            if match:
+                matches.append(match.group(1))
+        return sorted(matches)
+    else:
+        if os.path.exists(os.path.join(workdir, tag)):
+            return [tag]
+        else:
+            return []

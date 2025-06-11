@@ -19,8 +19,11 @@ def register_tag_callbacks(app):
         if not workdir:
             return [], []
 
-        # Update path dropdown
-        paths, full_paths = get_subdirectories(workdir, tag="spike_detection_00")
+        # Update path dropdown FIXME
+        paths, full_paths = get_subdirectories(workdir, tag="spike_detection")
+        optinal_tag = get_subdirectories(workdir, tag="spike_detection_00")
+        paths += optinal_tag[0]
+        full_paths += optinal_tag[1]
         optinal_tag = get_subdirectories(workdir, tag="spike_detection_00_0-127")
         paths += optinal_tag[0]
         full_paths += optinal_tag[1]
@@ -42,7 +45,9 @@ def register_tag_callbacks(app):
             return []
 
         _path = os.path.join(workdir, path)
-        experiment_index = get_experiment_index(_path, "spike_detection_*")
+        experiment_index = get_experiment_index(_path, "spike_detection_*") + get_experiment_index(
+            _path, "spike_detection"
+        )
         experiment_index_options = [
             {
                 "label": str(index),
