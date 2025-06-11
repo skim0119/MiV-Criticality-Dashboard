@@ -13,8 +13,7 @@ def generate_control_card():
                 id="bin-size-control-card-outer",
                 className="row",
                 children=[
-                    html.P("Bin Size", className="nine columns"),
-                    html.Button("sweep", id="sweep-bin-size-btn", className="three columns"),
+                    html.P("Bin Size", className="twelve columns"),
                 ],
             ),
             dcc.Slider(
