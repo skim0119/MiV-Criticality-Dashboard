@@ -8,7 +8,7 @@ A local dashboard for analyzing criticality in neural spike data.
 
 ## Installation
 
-We use `uv` to manage python and its dependencies, although you can use `pip`, `poetry`, or `conda` as well.
+We use `uv` to manage python and its dependencies. You can also use `pip`, `poetry`, or `conda` as well.
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh  # install uv
