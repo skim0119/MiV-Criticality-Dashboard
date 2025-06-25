@@ -37,14 +37,14 @@ def register_tag_callbacks(app):
     @app.callback(
         Output("experiment-index-dropdown", "options", allow_duplicate=True),
         Input("path-dropdown", "value"),
-        State("workdir-dropdown", "value"),
+        # State("workdir-dropdown", "value"),
         prevent_initial_call="initial_duplicate",
     )
-    def update_experiment_index_dropdown(path, workdir):
+    def update_experiment_index_dropdown(path):
         if not path:
             return []
 
-        _path = os.path.join(workdir, path)
+        _path = path
         experiment_index = get_experiment_index(_path, "spike_detection_*") + get_experiment_index(
             _path, "spike_detection"
         )

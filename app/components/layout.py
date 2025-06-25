@@ -26,7 +26,7 @@ def create_layout(workdirs):
             html.Div(
                 id="banner",
                 className="banner",
-                children=[html.H4("MiV-Interface 1.62.2.dashboard", style={"color": "white"})],
+                children=[html.H4("MiV-Interface 1.85.1.dashboard", style={"color": "white"})],
             ),
             html.Div(
                 id="main-container",

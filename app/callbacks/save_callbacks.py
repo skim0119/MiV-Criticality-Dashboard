@@ -1,5 +1,6 @@
 import datetime
 import os
+import pickle
 
 import plotly.io as pio
 from dash import Input, Output, State
@@ -10,7 +11,6 @@ def register_save_callbacks(app):
         Output("save-btn", "n_clicks"),
         Input("save-btn", "n_clicks"),
         State("analysis-textarea", "value"),
-        State("config-textarea", "value"),
         State("workdir-dropdown", "value"),
         State("path-dropdown", "value"),
         State("experiment-index-dropdown", "value"),
@@ -19,11 +19,18 @@ def register_save_callbacks(app):
         State("powerlaw-2-plot", "figure"),
         State("powerlaw-3-plot", "figure"),
         State("raster-plot", "figure"),
+        State("bin-size-slider", "value"),
+        State("threshold-percentage-slider", "value"),
+        State("time-difference-slider", "value"),
+        State("allow_multiple_spike_per_bin", "value"),
+        State("minimum-bins-in-avalanche-slider", "value"),
+        State("min-interburst-interval-bound-slider", "value"),
+        State("pre-burst-extension-slider", "value"),
+        State("post-burst-extension-slider", "value"),
     )
     def save_analysis(
         n_clicks,
         analysis_text,
-        config_text,
         workdir,
         path,
         experiment_index,
@@ -32,16 +39,26 @@ def register_save_callbacks(app):
         powerlaw2_fig,
         powerlaw3_fig,
         raster_fig,
+        bin_size,
+        threshold_percentage,
+        time_difference,
+        allow_multiple_spike_per_bin,
+        minimum_bins_in_avalanche,
+        min_interburst_interval_bound,
+        pre_burst_extension,
+        post_burst_extension,
     ):
         if n_clicks is None or n_clicks == 0:
             return 0
 
         # Create filename with datetime
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"criticality_{timestamp}.csv"
+        # timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        tag = f"path_{os.path.basename(path)}_{os.path.basename(experiment_index)}"
 
         # Create directory for figures
-        figures_dir = f"figures_{timestamp}"
+        figures_dir = f"figures_{tag}"
+        filename = f"{figures_dir}/criticality.csv"
+        config_filename = f"{figures_dir}/config.pkl"
         os.makedirs(figures_dir, exist_ok=True)
 
         # Save figures
@@ -51,13 +68,28 @@ def register_save_callbacks(app):
         pio.write_image(powerlaw3_fig, os.path.join(figures_dir, "powerlaw_average.png"))
         pio.write_image(raster_fig, os.path.join(figures_dir, "raster.png"))
 
-        # append analysis_text and config_text to criticality.csv
+        # Save configuration to pickle file
+        config_data = {
+            "bin_size": bin_size,
+            "threshold_percentage": threshold_percentage,
+            "time_difference": time_difference,
+            "allow_multiple_spike_per_bin": allow_multiple_spike_per_bin,
+            "minimum_bins_in_avalanche": minimum_bins_in_avalanche,
+            "min_interburst_interval_bound": min_interburst_interval_bound,
+            "pre_burst_extension": pre_burst_extension,
+            "post_burst_extension": post_burst_extension,
+            "workdir": workdir,
+            "path": path,
+            "experiment_index": experiment_index,
+            "figures_dir": figures_dir,
+            "timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        with open(config_filename, "wb") as f:
+            pickle.dump(config_data, f)
+
+        # Save analysis text to CSV file (simplified)
         with open(filename, "a+") as f:
-            f.write(
-                f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}, "
-                f"workdir: {workdir}, path: {path}, experiment: {experiment_index}, "
-                f"figures_dir: {figures_dir}, "
-                f"{config_text}\n"
-            )
+            f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}, {figures_dir}\n")
             f.write(f"{analysis_text}\n")
         return 0

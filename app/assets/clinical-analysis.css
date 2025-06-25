@@ -212,6 +212,31 @@ H5, H3 {
     align-items: center;
 }
 
+/* Raster time input styling */
+#raster-start-time, #raster-end-time {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+#raster-start-time:focus, #raster-end-time:focus {
+    outline: none;
+    border-color: #1364f0;
+    box-shadow: 0 0 0 2px rgba(19, 100, 240, 0.2);
+}
+
+#raster-start-time::placeholder, #raster-end-time::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+#raster-min-label, #raster-max-label {
+    margin-top: 2px;
+    font-style: italic;
+}
+
 /*
   ##Device = Most of the Smartphones Mobiles / ipad (Portrait)
   */
