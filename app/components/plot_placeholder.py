@@ -31,13 +31,36 @@ def generate_criticality_plot_placeholder():
                     html.Div(
                         className="nine columns",
                         children=[
-                            dcc.RangeSlider(
-                                id="raster-interval-slider",
-                                min=1,
-                                max=300,
-                                step=1,
-                                value=[0, 60],
-                                marks={i: f"{i}s" for i in range(0, 301, 60)},
+                            html.Div(
+                                className="row",
+                                children=[
+                                    html.Div(
+                                        className="six columns",
+                                        children=[
+                                            html.Label("Start Time (s):", style={"font-weight": "bold"}),
+                                            dcc.Input(
+                                                id="raster-start-time",
+                                                type="number",
+                                                placeholder="Enter start time",
+                                                style={"width": "100%", "margin-bottom": "5px"},
+                                            ),
+                                            html.Div(id="raster-min-label", style={"font-size": "12px", "color": "#666"}),
+                                        ],
+                                    ),
+                                    html.Div(
+                                        className="six columns",
+                                        children=[
+                                            html.Label("End Time (s):", style={"font-weight": "bold"}),
+                                            dcc.Input(
+                                                id="raster-end-time",
+                                                type="number",
+                                                placeholder="Enter end time",
+                                                style={"width": "100%", "margin-bottom": "5px"},
+                                            ),
+                                            html.Div(id="raster-max-label", style={"font-size": "12px", "color": "#666"}),
+                                        ],
+                                    ),
+                                ],
                             ),
                         ],
                     ),

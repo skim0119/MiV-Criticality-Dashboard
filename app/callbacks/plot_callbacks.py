@@ -208,15 +208,18 @@ def register_plot_callbacks(app):
         Output("raster-plot", "figure", allow_duplicate=True),
         Output("update-raster-btn", "disabled"),
         Output("update-raster-loading", "style"),
+        Output("raster-start-time", "value", allow_duplicate=True),
+        Output("raster-end-time", "value", allow_duplicate=True),
         Input("update-raster-btn", "n_clicks"),
-        State("raster-interval-slider", "value"),
+        State("raster-start-time", "value"),
+        State("raster-end-time", "value"),
         State("experiment-index-dropdown", "value"),
         State("bin-size-slider", "value"),
         prevent_initial_call=True,
     )
-    def update_raster_plot(n_clicks, interval_range, data_path, bin_size):
-        if not data_path or not interval_range:
-            return go.Figure(), False, {"display": "none"}
+    def update_raster_plot(n_clicks, start_time, end_time, data_path, bin_size):
+        if not data_path or start_time is None or end_time is None:
+            return go.Figure(), False, {"display": "none"}, start_time, end_time
 
         try:
             global EXPERIMENT_CACHE
@@ -225,6 +228,22 @@ def register_plot_callbacks(app):
             experiment = EXPERIMENT_CACHE
             spike_cache_path = experiment.config.spike_data_path
 
+            # Load spike data to get valid range
+            with open(spike_cache_path, "rb") as f:
+                spikestamps = pkl.load(f)
+            stime = spikestamps.get_first_spikestamp()
+            etime = spikestamps.get_last_spikestamp()
+
+            # Validate and clip the input values
+            start_time = max(stime, min(etime, start_time))
+            end_time = max(stime, min(etime, end_time))
+            
+            # If min > max, flip them
+            if start_time > end_time:
+                start_time, end_time = end_time, start_time
+
+            interval_range = [start_time, end_time]
+
             fig = make_subplots(rows=1, cols=1)
             get_raster(fig, spike_cache_path, experiment, bin_size, interval_range)
             fig.update_layout(
@@ -232,22 +251,21 @@ def register_plot_callbacks(app):
                 xaxis_title="Time (s)",
                 yaxis_title="Channel",
             )
-            return fig, False, {"display": "none"}
+            return fig, False, {"display": "none"}, start_time, end_time
         except Exception:
-            return go.Figure(), False, {"display": "none"}
+            return go.Figure(), False, {"display": "none"}, start_time, end_time
 
     @app.callback(
-        Output("raster-interval-slider", "min"),
-        Output("raster-interval-slider", "max"),
-        Output("raster-interval-slider", "marks"),
-        Output("raster-interval-slider", "value"),
-        Input("run-btn", "n_clicks"),
+        Output("raster-start-time", "value", allow_duplicate=True),
+        Output("raster-end-time", "value", allow_duplicate=True),
+        Input("raster-start-time", "value"),
+        Input("raster-end-time", "value"),
         State("experiment-index-dropdown", "value"),
         prevent_initial_call=True,
     )
-    def update_slider_range(n_clicks, data_path):
-        if not data_path:
-            return 1, 300, {i: f"{i}s" for i in range(0, 301, 60)}, [0, 60]
+    def validate_raster_inputs(start_time, end_time, data_path):
+        if not data_path or start_time is None or end_time is None:
+            raise PreventUpdate
 
         try:
             path = data_path
@@ -257,9 +275,44 @@ def register_plot_callbacks(app):
             stime = spikestamps.get_first_spikestamp()
             etime = spikestamps.get_last_spikestamp()
 
-            marks = {i: f"{i:.2f}s" for i in np.linspace(stime, etime, 20)}
-            initial_value = [stime, min(stime + 60, etime)]
+            # Clip values to valid range
+            start_time = max(stime, min(etime, start_time))
+            end_time = max(stime, min(etime, end_time))
+            
+            # If min > max, flip them
+            if start_time > end_time:
+                start_time, end_time = end_time, start_time
 
-            return stime, etime, marks, initial_value
+            return start_time, end_time
+        except Exception:
+            raise PreventUpdate
+
+    @app.callback(
+        Output("raster-min-label", "children"),
+        Output("raster-max-label", "children"),
+        Output("raster-start-time", "value"),
+        Output("raster-end-time", "value"),
+        Input("run-btn", "n_clicks"),
+        State("experiment-index-dropdown", "value"),
+        prevent_initial_call=True,
+    )
+    def update_raster_range_info(n_clicks, data_path):
+        if not data_path:
+            return "Min: 0s", "Max: 300s", 0, 60
+
+        try:
+            path = data_path
+            spike_cache_path = os.path.join(path, ".cache", "cache_data_rank000_0000.pkl")
+            with open(spike_cache_path, "rb") as f:
+                spikestamps = pkl.load(f)
+            stime = spikestamps.get_first_spikestamp()
+            etime = spikestamps.get_last_spikestamp()
+
+            min_label = f"Min: {stime:.2f}s"
+            max_label = f"Max: {etime:.2f}s"
+            initial_start = stime
+            initial_end = min(stime + 60, etime)
+
+            return min_label, max_label, initial_start, initial_end
         except Exception as e:
             raise PreventUpdate from e

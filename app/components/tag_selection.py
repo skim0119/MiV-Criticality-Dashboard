@@ -40,7 +40,8 @@ def generate_tag_selection_card(workdirs):
                         options=[],  # Initialize with empty options
                         value=None,  # Initialize with no value
                     ),
-                    html.Button("Save", id="save-btn", className="four columns"),
+                    html.Button("Load", id="load-btn", className="two columns"),
+                    html.Button("Save", id="save-btn", className="two columns"),
                 ],
             ),
             html.Hr(),
