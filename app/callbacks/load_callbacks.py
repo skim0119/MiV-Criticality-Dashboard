@@ -1,10 +1,7 @@
 import os
 import pickle
-import logging
 from dash import Input, Output, State
 
-# Set up logger for this module
-logger = logging.getLogger(__name__)
 
 def register_load_callbacks(app):
     @app.callback(
@@ -16,8 +13,6 @@ def register_load_callbacks(app):
         Output("min-interburst-interval-bound-slider", "value"),
         Output("pre-burst-extension-slider", "value"),
         Output("post-burst-extension-slider", "value"),
-        Output("config-textarea", "value"),
-        Output("analysis-textarea", "value"),
         Input("load-btn", "n_clicks"),
         State("path-dropdown", "value"),
         State("experiment-index-dropdown", "value"),
@@ -38,8 +33,6 @@ def register_load_callbacks(app):
                 0.1,    # min-interburst-interval-bound-slider default
                 0.0,    # pre-burst-extension-slider default
                 0.0,    # post-burst-extension-slider default
-                "",     # config-textarea default
-                "",     # analysis-textarea default
             ]
 
         tag = f"path_{os.path.basename(path)}_{os.path.basename(experiment_index)}"
@@ -58,38 +51,14 @@ def register_load_callbacks(app):
             "pre_burst_extension": 0.0,
             "post_burst_extension": 0.0,
         }
-        
-        config_text = ""
-        analysis_text = ""
 
         # Load configuration from pickle file
         if os.path.exists(config_filename):
-            try:
-                with open(config_filename, "rb") as f:
-                    config_data = pickle.load(f)
-                    
-                # Update config_values with loaded data
-                config_values.update({k: v for k, v in config_data.items() if k in config_values})
-                
-                # Reconstruct config text for display
-                config_text = f"bin_size: {config_values['bin_size']}, threshold_percentage: {config_values['threshold_percentage']}, time_difference: {config_values['time_difference']}, allow_multiple_spike_per_bin: {config_values['allow_multiple_spike_per_bin']}, minimum_bins_in_avalanche: {config_values['minimum_bins_in_avalanche']}, min_interburst_interval_bound: {config_values['min_interburst_interval_bound']}, pre_burst_extension: {config_values['pre_burst_extension']}, post_burst_extension: {config_values['post_burst_extension']}"
-                
-            except Exception as e:
-                config_text = f"Error loading configuration: {str(e)}"
-        else:
-            config_text = "Configuration file not found"
-        logger.warning("config_data")
-        logger.warning(config_data)
-
-        # Load analysis text from CSV file
-        if os.path.exists(csv_filename):
-            try:
-                with open(csv_filename, "r") as f:
-                    lines = f.readlines()
-                    if len(lines) >= 2:
-                        analysis_text = lines[1].strip()
-            except Exception as e:
-                analysis_text = f"Error loading analysis: {str(e)}"
+            with open(config_filename, "rb") as f:
+                config_data = pickle.load(f)
+            
+            # Update config_values with loaded data
+            config_values.update({k: v for k, v in config_data.items() if k in config_values})
 
         return [
             config_values["bin_size"],
@@ -100,6 +69,4 @@ def register_load_callbacks(app):
             config_values["min_interburst_interval_bound"],
             config_values["pre_burst_extension"],
             config_values["post_burst_extension"],
-            config_text,
-            analysis_text,
         ] 
