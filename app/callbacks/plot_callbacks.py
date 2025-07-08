@@ -290,15 +290,13 @@ def register_plot_callbacks(app):
     @app.callback(
         Output("raster-min-label", "children"),
         Output("raster-max-label", "children"),
-        Output("raster-start-time", "value"),
-        Output("raster-end-time", "value"),
         Input("run-btn", "n_clicks"),
         State("experiment-index-dropdown", "value"),
         prevent_initial_call=True,
     )
     def update_raster_range_info(n_clicks, data_path):
         if not data_path:
-            return "Min: 0s", "Max: 300s", 0, 60
+            return "Min: 0s", "Max: 300s"
 
         try:
             path = data_path
@@ -310,9 +308,7 @@ def register_plot_callbacks(app):
 
             min_label = f"Min: {stime:.2f}s"
             max_label = f"Max: {etime:.2f}s"
-            initial_start = stime
-            initial_end = min(stime + 60, etime)
 
-            return min_label, max_label, initial_start, initial_end
+            return min_label, max_label
         except Exception as e:
             raise PreventUpdate from e
