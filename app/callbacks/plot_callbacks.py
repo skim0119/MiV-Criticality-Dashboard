@@ -51,6 +51,8 @@ def register_plot_callbacks(app):
         State("min-interburst-interval-bound-slider", "value"),
         State("pre-burst-extension-slider", "value"),
         State("post-burst-extension-slider", "value"),
+        State("raster-start-time", "value"),
+        State("raster-end-time", "value"),
         prevent_initial_call="initial_duplicate",
     )
     def update_plots(
@@ -64,6 +66,8 @@ def register_plot_callbacks(app):
         min_interburst_interval_bound,
         pre_burst_extension,
         post_burst_extension,
+        raster_start_time,
+        raster_end_time,
     ):
         if not data_path:
             return [go.Figure() for _ in range(5)] + [""] + [False, {"display": "none"}]
@@ -178,8 +182,13 @@ def register_plot_callbacks(app):
                 margin=dict(l=0, r=0, t=30, b=1),
             )
 
+            # Use provided start and end times for raster plot
+            interval_range = None
+            if raster_start_time is not None and raster_end_time is not None:
+                interval_range = [raster_start_time, raster_end_time]
+            
             fig6 = make_subplots(rows=1, cols=1)
-            get_raster(fig6, spike_cache_path, experiment, bin_size)
+            get_raster(fig6, spike_cache_path, experiment, bin_size, interval_range)
             fig6.update_layout(
                 title="Raster",
                 xaxis_title="Time (s)",
