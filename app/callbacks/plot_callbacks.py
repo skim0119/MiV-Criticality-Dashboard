@@ -12,6 +12,7 @@ from app.criticality_module import Config, RunCriticalityAnalysis
 from app.utils.plot_utils import get_raster
 
 EXPERIMENT_CACHE = None
+HISTOGRAM_DATA = {}
 
 
 def func(config):
@@ -73,7 +74,7 @@ def register_plot_callbacks(app):
             return [go.Figure() for _ in range(5)] + [""] + [False, {"display": "none"}]
 
         try:
-            global EXPERIMENT_CACHE
+            global EXPERIMENT_CACHE, HISTOGRAM_DATA
             path = data_path
             index = data_path.split("spike_detection_")[1]
             pipeline_run_path = os.path.dirname(path)
@@ -98,8 +99,38 @@ def register_plot_callbacks(app):
 
             pl_fit = experiment.power_law_fitting()
 
-            # plot branching ratio histogram in fig1
             branching_ratio, mean_branching_ratio = experiment.branching_ratio_histogram()
+            x2, y2, logbins2, size_fit, tau = pl_fit[0]
+            x3, y3, logbins3, duration_fit, alpha = pl_fit[1]
+            x4, y4, logbins4, average_fit, svz, svz_estim_ratio = pl_fit[2]
+            HISTOGRAM_DATA[data_path] = {
+                "fig1": {
+                    "branching_ratio": branching_ratio,
+                    "mean_branching_ratio": mean_branching_ratio,
+                },
+                "fig2": {
+                    "x": x2,
+                    "y": y2,
+                    "logbins": logbins2,
+                    "size_fit": size_fit,
+                    "tau": tau,
+                },
+                "fig3": {
+                    "x": x3,
+                    "y": y3,
+                    "logbins": logbins3,
+                    "duration_fit": duration_fit,
+                    "alpha": alpha,
+                },
+                "fig4": {
+                    "x": x4,
+                    "y": y4,
+                    "logbins": logbins4,
+                    "average_fit": average_fit,
+                    "svz": svz,
+                    "svz_estim_ratio": svz_estim_ratio,
+                },
+            }
             fig1 = make_subplots(rows=1, cols=1)
             trace = px.histogram(
                 x=branching_ratio,
@@ -113,17 +144,15 @@ def register_plot_callbacks(app):
                 margin=dict(l=0, r=0, t=30, b=1),
             )
 
-            # plot avalanche size histogram in loglog scale in fig2
-            x, y, logbins, size_fit, tau = pl_fit[0]
             fig2 = make_subplots(rows=1, cols=1)
-            if len(x) > 1:
+            if len(x2) > 1:
                 trace1 = px.scatter(
-                    x=x,
-                    y=y,
+                    x=x2,
+                    y=y2,
                 )
                 fig2.add_trace(trace1.data[0])
             trace2 = px.line(
-                x=logbins,
+                x=logbins2,
                 y=size_fit,
             )
             trace2.data[0].line.dash = "dot"
@@ -138,14 +167,13 @@ def register_plot_callbacks(app):
             fig2.update_yaxes(type="log")
 
             # plot avalanche duration
-            x, y, logbins, duration_fit, alpha = pl_fit[1]
             fig3 = make_subplots(rows=1, cols=1)
             trace1 = px.scatter(
-                x=x,
-                y=y,
+                x=x3,
+                y=y3,
             )
             trace2 = px.line(
-                x=logbins,
+                x=logbins3,
                 y=duration_fit,
             )
             trace2.data[0].line.dash = "dot"
@@ -160,16 +188,16 @@ def register_plot_callbacks(app):
             fig3.update_xaxes(type="log")
             fig3.update_yaxes(type="log")
 
-            x, y, logbins, average_fit, svz, svz_estim_ratio = pl_fit[2]
+            # plot average size in fig4
             fig4 = make_subplots(rows=1, cols=1)
-            if len(x) > 1:
+            if len(x4) > 1:
                 trace1 = px.scatter(
-                    x=x,
-                    y=y,
+                    x=x4,
+                    y=y4,
                 )
                 fig4.add_trace(trace1.data[0])
             trace2 = px.line(
-                x=logbins,
+                x=logbins4,
                 y=average_fit,
             )
             trace2.data[0].line.dash = "dot"

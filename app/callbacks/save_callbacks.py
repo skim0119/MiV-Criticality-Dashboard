@@ -5,6 +5,9 @@ import pickle
 import plotly.io as pio
 from dash import Input, Output, State
 
+# Import HISTOGRAM_DATA from plot_callbacks
+from app.callbacks.plot_callbacks import HISTOGRAM_DATA
+
 
 def register_save_callbacks(app):
     @app.callback(
@@ -59,6 +62,7 @@ def register_save_callbacks(app):
         figures_dir = f"figures_{tag}"
         filename = f"{figures_dir}/criticality.csv"
         config_filename = f"{figures_dir}/config.pkl"
+        histogram_filename = f"{figures_dir}/histogram_data.pkl"
         os.makedirs(figures_dir, exist_ok=True)
 
         # Save figures
@@ -92,4 +96,10 @@ def register_save_callbacks(app):
         with open(filename, "a+") as f:
             f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}, {figures_dir}\n")
             f.write(f"{analysis_text}\n")
+
+        # Save histogram data if available
+        histogram_data = HISTOGRAM_DATA.get(path)
+        if histogram_data is not None:
+            with open(histogram_filename, "wb") as f:
+                pickle.dump(histogram_data, f)
         return 0
