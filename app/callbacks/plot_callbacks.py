@@ -103,26 +103,26 @@ def register_plot_callbacks(app):
             x2, y2, logbins2, size_fit, tau = pl_fit[0]
             x3, y3, logbins3, duration_fit, alpha = pl_fit[1]
             x4, y4, logbins4, average_fit, svz, svz_estim_ratio = pl_fit[2]
-            HISTOGRAM_DATA[data_path] = {
-                "fig1": {
+            HISTOGRAM_DATA.update({
+                "branching_ratio": {
                     "branching_ratio": branching_ratio,
                     "mean_branching_ratio": mean_branching_ratio,
                 },
-                "fig2": {
+                "tau": {
                     "x": x2,
                     "y": y2,
                     "logbins": logbins2,
                     "size_fit": size_fit,
                     "tau": tau,
                 },
-                "fig3": {
+                "alpha": {
                     "x": x3,
                     "y": y3,
                     "logbins": logbins3,
                     "duration_fit": duration_fit,
                     "alpha": alpha,
                 },
-                "fig4": {
+                "svz": {
                     "x": x4,
                     "y": y4,
                     "logbins": logbins4,
@@ -130,7 +130,7 @@ def register_plot_callbacks(app):
                     "svz": svz,
                     "svz_estim_ratio": svz_estim_ratio,
                 },
-            }
+            })
             fig1 = make_subplots(rows=1, cols=1)
             trace = px.histogram(
                 x=branching_ratio,

@@ -97,9 +97,6 @@ def register_save_callbacks(app):
             f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}, {figures_dir}\n")
             f.write(f"{analysis_text}\n")
 
-        # Save histogram data if available
-        histogram_data = HISTOGRAM_DATA.get(path)
-        if histogram_data is not None:
-            with open(histogram_filename, "wb") as f:
-                pickle.dump(histogram_data, f)
+        with open(histogram_filename, "wb") as f:
+            pickle.dump(histogram_data, f)
         return 0
