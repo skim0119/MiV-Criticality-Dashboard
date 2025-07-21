@@ -98,5 +98,5 @@ def register_save_callbacks(app):
             f.write(f"{analysis_text}\n")
 
         with open(histogram_filename, "wb") as f:
-            pickle.dump(histogram_data, f)
+            pickle.dump(HISTOGRAM_DATA, f)
         return 0
