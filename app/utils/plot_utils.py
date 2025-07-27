@@ -3,7 +3,7 @@ import pickle as pkl
 import plotly.graph_objs as go
 
 
-def get_raster(fig, data_path, experiment, bin_size, interval=None):
+def get_raster(fig, data_path, experiment, bin_size, interval, save_buffer: dict):
     """Generate raster plot for the given data."""
     # Load Data
     with open(data_path, "rb") as f:
@@ -38,5 +38,15 @@ def get_raster(fig, data_path, experiment, bin_size, interval=None):
             continue
         fig.add_vrect(x0=start, x1=end, fillcolor="red", opacity=0.2, line_width=0, layer="below")
     fig.update_xaxes(range=[interval[0], interval[1]])
+
+    save_buffer["raster"] = {
+        "spike_x": x,
+        "spike_y": y,
+        "avalanche_starts": starts_time,
+        "avalanche_ends": ends_time,
+        "interval_range": interval,
+        "bin_size": bin_size,
+        "spike_cache_path": data_path,
+    }
 
     return trace

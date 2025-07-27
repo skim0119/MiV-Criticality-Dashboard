@@ -1,7 +1,6 @@
 import os
 import pickle as pkl
 
-import numpy as np
 import plotly.express as px
 import plotly.graph_objs as go
 from dash import Input, Output, State
@@ -103,34 +102,36 @@ def register_plot_callbacks(app):
             x2, y2, logbins2, size_fit, tau = pl_fit[0]
             x3, y3, logbins3, duration_fit, alpha = pl_fit[1]
             x4, y4, logbins4, average_fit, svz, svz_estim_ratio = pl_fit[2]
-            HISTOGRAM_DATA.update({
-                "branching_ratio": {
-                    "branching_ratio": branching_ratio,
-                    "mean_branching_ratio": mean_branching_ratio,
-                },
-                "tau": {
-                    "x": x2,
-                    "y": y2,
-                    "logbins": logbins2,
-                    "size_fit": size_fit,
-                    "tau": tau,
-                },
-                "alpha": {
-                    "x": x3,
-                    "y": y3,
-                    "logbins": logbins3,
-                    "duration_fit": duration_fit,
-                    "alpha": alpha,
-                },
-                "svz": {
-                    "x": x4,
-                    "y": y4,
-                    "logbins": logbins4,
-                    "average_fit": average_fit,
-                    "svz": svz,
-                    "svz_estim_ratio": svz_estim_ratio,
-                },
-            })
+            HISTOGRAM_DATA.update(
+                {
+                    "branching_ratio": {
+                        "branching_ratio": branching_ratio,
+                        "mean_branching_ratio": mean_branching_ratio,
+                    },
+                    "tau": {
+                        "x": x2,
+                        "y": y2,
+                        "logbins": logbins2,
+                        "size_fit": size_fit,
+                        "tau": tau,
+                    },
+                    "alpha": {
+                        "x": x3,
+                        "y": y3,
+                        "logbins": logbins3,
+                        "duration_fit": duration_fit,
+                        "alpha": alpha,
+                    },
+                    "svz": {
+                        "x": x4,
+                        "y": y4,
+                        "logbins": logbins4,
+                        "average_fit": average_fit,
+                        "svz": svz,
+                        "svz_estim_ratio": svz_estim_ratio,
+                    },
+                }
+            )
             fig1 = make_subplots(rows=1, cols=1)
             trace = px.histogram(
                 x=branching_ratio,
@@ -214,9 +215,9 @@ def register_plot_callbacks(app):
             interval_range = None
             if raster_start_time is not None and raster_end_time is not None:
                 interval_range = [raster_start_time, raster_end_time]
-            
+
             fig6 = make_subplots(rows=1, cols=1)
-            get_raster(fig6, spike_cache_path, experiment, bin_size, interval_range)
+            get_raster(fig6, spike_cache_path, experiment, bin_size, interval_range, HISTOGRAM_DATA)
             fig6.update_layout(
                 title="Raster",
                 xaxis_title="Time (s)",
@@ -274,15 +275,16 @@ def register_plot_callbacks(app):
             # Validate and clip the input values
             start_time = max(stime, min(etime, start_time))
             end_time = max(stime, min(etime, end_time))
-            
+
             # If min > max, flip them
             if start_time > end_time:
                 start_time, end_time = end_time, start_time
 
             interval_range = [start_time, end_time]
 
+            global HISTOGRAM_DATA
             fig = make_subplots(rows=1, cols=1)
-            get_raster(fig, spike_cache_path, experiment, bin_size, interval_range)
+            get_raster(fig, spike_cache_path, experiment, bin_size, interval_range, HISTOGRAM_DATA)
             fig.update_layout(
                 title="Raster",
                 xaxis_title="Time (s)",
@@ -315,14 +317,14 @@ def register_plot_callbacks(app):
             # Clip values to valid range
             start_time = max(stime, min(etime, start_time))
             end_time = max(stime, min(etime, end_time))
-            
+
             # If min > max, flip them
             if start_time > end_time:
                 start_time, end_time = end_time, start_time
 
             return start_time, end_time
         except Exception:
-            raise PreventUpdate
+            raise PreventUpdate from None
 
     @app.callback(
         Output("raster-min-label", "children"),
